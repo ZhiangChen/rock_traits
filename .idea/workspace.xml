@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b5228e17-2098-481e-8c6d-7af9514b909f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/orthomosaic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/orthomosaic.py" beforeDir="false" afterPath="$PROJECT_DIR$/orthomosaic.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,11 +15,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/instance.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="273" column="8" lean-forward="true" selection-start-line="273" selection-start-column="8" selection-end-line="273" selection-end-column="8" />
-              <folding>
-                <element signature="e#216#234#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="363">
+              <caret line="11" selection-start-line="11" selection-end-line="11" selection-end-column="31" />
             </state>
           </provider>
         </entry>
@@ -29,8 +24,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/orthomosaic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="429">
-              <caret line="13" column="12" selection-start-line="13" selection-start-column="12" selection-end-line="13" selection-end-column="12" />
+            <state relative-caret-position="952">
+              <caret line="125" lean-forward="true" selection-start-line="125" selection-end-line="125" />
+              <folding>
+                <element signature="e#135#144#0" expanded="true" />
+                <element signature="e#1220#1417#0" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -61,9 +60,9 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="949" />
-    <option name="y" value="126" />
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="1030" />
+    <option name="y" value="163" />
     <option name="width" value="3075" />
     <option name="height" value="2036" />
   </component>
@@ -102,7 +101,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.orthomosaic">
     <configuration name="instance" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="rock_traits" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -124,8 +123,30 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="orthomosaic" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="rock_traits" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/orthomosaic.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.orthomosaic" />
         <item itemvalue="Python.instance" />
       </list>
     </recent_temporary>
@@ -144,15 +165,14 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="949" y="126" width="3075" height="2036" extended-state="0" />
-    <editor active="true" />
+    <frame x="110" y="35" width="3730" height="2125" extended-state="7" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24975255" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20537168" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32957748" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.33107343" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3991393" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -170,18 +190,19 @@
     <entry file="file://$PROJECT_DIR$/rocks.py" />
     <entry file="file://$PROJECT_DIR$/instance.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="273" column="8" lean-forward="true" selection-start-line="273" selection-start-column="8" selection-end-line="273" selection-end-column="8" />
-          <folding>
-            <element signature="e#216#234#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="363">
+          <caret line="11" selection-start-line="11" selection-end-line="11" selection-end-column="31" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/orthomosaic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="429">
-          <caret line="13" column="12" selection-start-line="13" selection-start-column="12" selection-end-line="13" selection-end-column="12" />
+        <state relative-caret-position="952">
+          <caret line="125" lean-forward="true" selection-start-line="125" selection-end-line="125" />
+          <folding>
+            <element signature="e#135#144#0" expanded="true" />
+            <element signature="e#1220#1417#0" />
+          </folding>
         </state>
       </provider>
     </entry>
