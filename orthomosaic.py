@@ -4,6 +4,7 @@ Zhiang Chen, Feb 2019
 
 Copyright (c) 2019 Distributed Robotic Exploration and Mapping Systems Laboratory, ASU
 
+read Tiff; read global instances; add global instances to the tiff and create a heatmap; save the new tiff
 """
 
 import os
@@ -11,8 +12,6 @@ import gdal
 import cv2
 import pickle
 import numpy as np
-from osgeo import gdal
-from osgeo import osr
 import colorsys
 import random
 import matplotlib.pyplot as plt
@@ -128,7 +127,7 @@ class orthotiff(object):
 if __name__  ==  "__main__":
     orth = orthotiff()
     orth.readTiff("./datasets/C3/C3.tif")
-    orth.readInstances("./datasets/C3/registered_instances.pickle")
+    orth.readInstances("./datasets/C3/registered_instances_v3.pickle")
     print("mapping instances")
     orth.mapInstance()
-    orth.saveTiff("./datasets/C3/C3_mask_v2.tif")
+    orth.saveTiff("./datasets/C3/C3_mask_v3.tif")

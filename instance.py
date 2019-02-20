@@ -15,7 +15,12 @@ import time
 class rock(object):
     def __init__(self):
         self.instances = []
-        self.registered_instances = []
+        self.non_edge_instances = []
+        self.edge_instances = []
+
+        self.added_rocks = 0
+        self.merged_rocks = 0
+        self.all_rocks = 0
 
     def loadFile(self, f, mode="pickle"):
         """
@@ -30,9 +35,11 @@ class rock(object):
                 return instances
 
     def saveRegisteredInstances(self, f='registered_instances.pickle', mode="pickle"):
+        registered_instances = self.non_edge_instances + self.edge_instances
+        print(len(registered_instances))
         if mode == "pickle":
             with open(f, 'wb') as pk:
-                pickle.dump(self.registered_instances, pk)
+                pickle.dump(registered_instances, pk)
 
     def addAsGlobalInstances(self, instances, mask_resize=None, swap_coord=True):
         """
@@ -75,11 +82,10 @@ class rock(object):
         """
         self.instances = []
 
-    def refineInstance(self, overlap_x, overlap_y, tile_size, clear_register=False):
+    def refineInstance(self, overlap_x, overlap_y, tile_size):
         """
         refine and merge all instances, and then register all instances
         :param tile_size: tile size
-        :param clear_register: True if the register needs to be cleared
         :return:
         """
         self.tile_scope = tile_size + 100
@@ -88,39 +94,36 @@ class rock(object):
         self.overlap_y = overlap_y
 
 
-        if clear_register:
-            self.registered_instances = []
-
         for i,instance in enumerate(self.instances):
             id = self.__checkRegister(instance)
 
             if id == None:
-                self.registered_instances.append(instance)
+                self.non_edge_instances.append(instance)
+                self.added_rocks += 1
+
             else:
-                #print("merging")
                 self.__mergeInstances(id, instance)
-            #if i%100 == 0:
-            #print(len(self.registered_instances))
 
 
 
-    def __checkRegister(self, instance, threshold=5):
+    def __checkRegister(self, instance, threshold=20):
         """
-        naive brute force search if instance can be merged to any one in self.registered_instances
+        1. check if the instance is on the boundary. If it is not, then it can be directly added to self.added_instances
+        2. If it is, then check if it can be merged to any instances in self.merged_instances.
+        3. If it can, return the instance id in self.merged_instances. If it cannot, return -1
         :param instance: instance to check
         :return: id of the one to be merge in self.registered_instances, otherwise None
         """
-        if self.__checkBoundary(instance): # True when the instance is not on the boundary
+        if self.__checkBoundary(instance):  # True when the instance is not on the boundary
             return None
 
-        for id, ri in enumerate(self.registered_instances):
-            if self.__checkCoords(ri['coord'], instance['coord']):
-                if self.__checkBBOverlap(ri['bb'], instance['bb']):
-                    nb = self.__checkMaskOverlap(ri['mask'], instance['mask'])
-                    if nb > threshold:
-                        return id
+        for id, ri in enumerate(self.edge_instances):
+            if self.__checkBBOverlap(ri['bb'], instance['bb']):
+                nb = self.__checkMaskOverlap(ri['mask'], instance['mask'])
+                if nb > threshold:
+                    return id
 
-        return None
+        return -1
 
     def __checkBoundary(self, instance):
         """
@@ -196,15 +199,20 @@ class rock(object):
 
 
     def __mergeInstances(self, id, instance):
-        ri = self.registered_instances[id]
-        ri['mask'] = np.concatenate((ri['mask'], instance['mask']), axis=0)
-        ri['coord'] = np.concatenate((ri['coord'].reshape(-1,2), instance['coord'].reshape(-1,2)), axis=0)
-        min_y = np.min(ri['mask'][:, 0])
-        min_x = np.min(ri['mask'][:, 1])
-        max_y = np.max(ri['mask'][:, 0])
-        max_x = np.max(ri['mask'][:, 1])
-        ri['bb'] = np.array((min_y, min_x, max_y, max_x))
-        self.registered_instances[id] = ri
+        if id == -1:
+            self.edge_instances.append(instance)
+            self.added_rocks += 1
+        else:
+            ri = self.edge_instances[id]
+            ri['mask'] = np.concatenate((ri['mask'], instance['mask']), axis=0)
+            ri['coord'] = np.concatenate((ri['coord'].reshape(-1,2), instance['coord'].reshape(-1,2)), axis=0)
+            min_y = np.min(ri['mask'][:, 0])
+            min_x = np.min(ri['mask'][:, 1])
+            max_y = np.max(ri['mask'][:, 0])
+            max_x = np.max(ri['mask'][:, 1])
+            ri['bb'] = np.array((min_y, min_x, max_y, max_x))
+            self.edge_instances[id] = ri
+            self.merged_rocks += 1
 
 
 
@@ -218,13 +226,13 @@ if __name__  ==  "__main__":
     t2 = time.time()
     print(t2-t1)
 
-
     rk.resetInstances()
     instances = rk.loadFile("./datasets/C3/pickles/instances_1.pickle")
     rk.addAsGlobalInstances(instances, (400, 400))
     rk.refineInstance(10, 10, 400)
     t2 = time.time()
     print(t2 - t1)
+
 
     rk.resetInstances()
     instances = rk.loadFile("./datasets/C3/pickles/instances_2.pickle")
@@ -267,7 +275,13 @@ if __name__  ==  "__main__":
     rk.refineInstance(10, 10, 400)
     t2 = time.time()
     print(t2 - t1)
-    print(len(rk.registered_instances))
+    
+    rk.resetInstances()
+    instances = rk.loadFile("./datasets/C3/pickles/instances_8.pickle")
+    rk.addAsGlobalInstances(instances, (400, 400))
+    rk.refineInstance(10, 10, 400)
+    t2 = time.time()
+    print(t2 - t1)
 
     rk.saveRegisteredInstances()
 
@@ -281,15 +295,26 @@ if __name__  ==  "__main__":
 
 
 """
-n = range(10000,80000,10000)
-t = [105.3374490737915,
+import matplotlib.pyplot as plt
+n1 = range(0,80000,10000)
+n2 = range(0,80000,10000)
+t1 = [0, 
+105.3374490737915,
 354.87612986564636,
 744.066376209259,
 1261.9850449562073,
 1929.37216091156,
 2737.7477049827576,
 3638.1695008277893]
-plt.plot(n,t)
+t2= [0, 
+31.482572078704834, 
+52.84216094017029, 
+85.81673884391785, 
+161.5292031764984, 
+219.15165948867798, 
+273.3696777820587, 
+340.45087242126465]
+plt.plot(n2,t2)
 plt.show()
 """
 

@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b5228e17-2098-481e-8c6d-7af9514b909f" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance.py" beforeDir="false" afterPath="$PROJECT_DIR$/instance.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/orthomosaic.py" beforeDir="false" afterPath="$PROJECT_DIR$/orthomosaic.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,20 +18,39 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/instance.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="363">
-              <caret line="11" selection-start-line="11" selection-end-line="11" selection-end-column="31" />
+            <state relative-caret-position="462">
+              <caret line="38" column="8" selection-start-line="38" selection-start-column="8" selection-end-line="41" selection-end-column="53" />
+              <folding>
+                <element signature="e#216#234#0" expanded="true" />
+                <element signature="e#4213#4789#0" />
+                <element signature="e#5542#6310#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/orthomosaic.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
+              <folding>
+                <element signature="e#135#144#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/orthomosaic.py">
+        <entry file="file://$PROJECT_DIR$/analysis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="952">
-              <caret line="125" lean-forward="true" selection-start-line="125" selection-end-line="125" />
+            <state relative-caret-position="2511">
+              <caret line="152" column="20" lean-forward="true" selection-start-line="152" selection-start-column="20" selection-end-line="152" selection-end-column="20" />
               <folding>
-                <element signature="e#135#144#0" expanded="true" />
-                <element signature="e#1220#1417#0" />
+                <element signature="e#142#160#0" expanded="true" />
+                <element signature="e#1556#1897#0" />
+                <element signature="e#1711#2098#0" />
+                <element signature="e#3609#3935#0" />
               </folding>
             </state>
           </provider>
@@ -57,13 +79,14 @@
         <option value="$PROJECT_DIR$/rocks.py" />
         <option value="$PROJECT_DIR$/instance.py" />
         <option value="$PROJECT_DIR$/orthomosaic.py" />
+        <option value="$PROJECT_DIR$/analysis.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="1030" />
-    <option name="y" value="163" />
-    <option name="width" value="3075" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="712" />
+    <option name="y" value="80" />
+    <option name="width" value="3076" />
     <option name="height" value="2036" />
   </component>
   <component name="ProjectView">
@@ -71,7 +94,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -83,6 +105,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -101,7 +124,28 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.orthomosaic">
+  <component name="RunManager" selected="Python.analysis">
+    <configuration name="analysis" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="rock_traits" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/analysis.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="instance" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="rock_traits" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -146,6 +190,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.analysis" />
         <item itemvalue="Python.orthomosaic" />
         <item itemvalue="Python.instance" />
       </list>
@@ -165,14 +210,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="110" y="35" width="3730" height="2125" extended-state="7" />
+    <frame x="110" y="35" width="3730" height="2125" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20537168" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32957748" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3991393" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.37708446" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -190,18 +236,42 @@
     <entry file="file://$PROJECT_DIR$/rocks.py" />
     <entry file="file://$PROJECT_DIR$/instance.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="363">
-          <caret line="11" selection-start-line="11" selection-end-line="11" selection-end-column="31" />
+        <state relative-caret-position="462">
+          <caret line="38" column="8" selection-start-line="38" selection-start-column="8" selection-end-line="41" selection-end-column="53" />
+          <folding>
+            <element signature="e#216#234#0" expanded="true" />
+            <element signature="e#4213#4789#0" />
+            <element signature="e#5542#6310#0" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/orthomosaic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="952">
-          <caret line="125" lean-forward="true" selection-start-line="125" selection-end-line="125" />
+        <state relative-caret-position="165">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
           <folding>
             <element signature="e#135#144#0" expanded="true" />
-            <element signature="e#1220#1417#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python3.6/dist-packages/matplotlib/artist.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="877" selection-start-line="877" selection-end-line="877" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/analysis.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2511">
+          <caret line="152" column="20" lean-forward="true" selection-start-line="152" selection-start-column="20" selection-end-line="152" selection-end-column="20" />
+          <folding>
+            <element signature="e#142#160#0" expanded="true" />
+            <element signature="e#1556#1897#0" />
+            <element signature="e#1711#2098#0" />
+            <element signature="e#3609#3935#0" />
           </folding>
         </state>
       </provider>
