@@ -12,6 +12,9 @@ import os
 import gdal
 import pickle
 import matplotlib.pyplot as plt
+from math import *
+from matplotlib.collections import PatchCollection
+import matplotlib
 
 
 class contourAnalysis(object):
@@ -62,6 +65,14 @@ class contourAnalysis(object):
         area = self.__coord2pix(area)
         self.ids = self.__findInstances(area)
         print(len(self.ids))
+
+    def saveRegisteredInstances(self, f, mode='pickle'):
+        registered_instances = []
+        for id in self.ids:
+            registered_instances.append(self.instances[id])
+        if mode == "pickle":
+            with open(f, 'wb') as pk:
+                pickle.dump(registered_instances, pk)
 
     def getSizeHist(self, nm=100, threshold=4000, display=True):
         self.sizes = []
@@ -136,8 +147,122 @@ class contourAnalysis(object):
                 mask_[y, x] = 1
         return mask_
 
-    def __getAxes(self, mask):
-        pass
+    def getOrientationHist(self, nm=20, threshold=0.6, display="polar"):
+        self.orientations = []
+        for id in self.ids:
+            bb = self.instances[id]['bb']
+            mask = self.instances[id]['mask']
+            image = self.tif[bb[0]:bb[2], bb[1]:bb[3], :]
+            top_left = bb[:2]
+            mask = mask - top_left
+            mask = self.__create_bool_mask(mask, image.shape[:2])
+            _, contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+            areas = [cv2.contourArea(cnt) for cnt in contours]
+            i = np.argmax(areas)
+            cnt = contours[i]
+            ellipse = cv2.fitEllipse(cnt)
+            (x, y), (MA, ma), angle = ellipse
+            a = ma / 2
+            b = MA / 2
+            eccentricity = sqrt(pow(a, 2) - pow(b, 2))
+            eccentricity = round(eccentricity / a, 2)
+            self.orientations.append([angle, eccentricity])
+
+            """
+            #image = cv2.drawContours(image, cnt, -1, (0, 100, 0), 1)
+            image = cv2.ellipse(image, ellipse, (0, 100, 0), 1)
+            d = angle*pi/180
+            start = (int(x - a*sin(d)), int(y + a*cos(d)))
+            end = (int(x + a*sin(d)), int(y - a*cos(d)))
+            print(start)
+            print(end)
+            image = cv2.line(image, start, end, (200, 200, 0), 1)
+            print(eccentricity)
+            print(x,y)
+            print(MA,ma)
+            print(angle)
+            plt.imshow(image)
+            plt.show()
+            """
+        if display == "polar":
+            """
+            the polar is not accurate because pi is not accurate
+            """
+            rad90 = 90 / 180.0 * np.pi
+            nm = nm*4
+            orn = np.asarray(self.orientations).copy()
+            angles = orn[:,0]/180.0*np.pi
+
+            for i,angle in enumerate(angles):
+                if angle>=rad90:
+                    angles[i] = angle - rad90
+                else:
+                    angles[i] = rad90 - angle
+
+            ax = plt.subplot(111, projection='polar')
+            bins = np.linspace(0.0, 2*np.pi, nm)
+            n, bins_, patches = ax.hist(angles, bins)
+            plt.show()
+
+        elif display == "cart":
+            fig, ax = plt.subplots()
+            orn = np.asarray(self.orientations).copy()
+            angles = orn[:, 0]
+            for i, angle in enumerate(angles):
+                if angle>=90:
+                    angles[i] = angle - 90
+                else:
+                    angles[i] = 90 - angle
+            n, bins, patches = ax.hist(angles, nm)
+            plt.show()
+
+        elif display == "polar2":
+            fig, ax = plt.subplots()
+            orn = np.asarray(self.orientations).copy()
+            angles = orn[:, 0]
+            for i, angle in enumerate(angles):
+                if angle >= 90:
+                    angles[i] = angle - 90
+                else:
+                    angles[i] = 90 - angle
+            n, bins, patches = ax.hist(angles, nm)
+            plt.close('all')
+
+            fig, ax = plt.subplots()
+            lim = np.max(n) + 20
+            plt.xlim(0,lim)
+            plt.ylim(0,lim)
+            patches = []
+            y0 = x0 = 0
+            image = np.zeros((y0,y0,3), dtype='uint8')
+
+            c = np.array([np.cos(np.deg2rad(x)) for x in range(0,95,10)])
+            s = np.array([np.sin(np.deg2rad(x)) for x in range(0,95,10)])
+            colors = []
+
+            for i in range(nm):
+                angle1 = bins[i+1]
+                angle2 = bins[i]
+                r = n[i]
+                x1 = r*np.cos(np.deg2rad(angle1))
+                y1 = r*np.sin(np.deg2rad(angle1))
+                x2 = r*np.cos(np.deg2rad(angle2))
+                y2 = r*np.sin(np.deg2rad(angle2))
+                pts = np.array(((x0,y0),(x1,y1),(x2,y2)))
+                poly = plt.Polygon(pts, color='blue')
+                patches.append(poly)
+                colors.append(1 - r/lim)
+
+            p = PatchCollection(patches, cmap=matplotlib.cm.jet, alpha=0.4)
+            p.set_array(np.array(colors))
+            ax.add_collection(p)
+
+            plt.show()
+
+
+
+
+
 
     def __getPolygonPoints(self):
         pass
@@ -147,7 +272,10 @@ if __name__  ==  "__main__":
     ca = contourAnalysis()
     ca.readTiff("./datasets/C3/C3.tif")
     ca.readInstances("./datasets/C3/registered_instances_v3.pickle")
-    ca.registerArea(4145850, 4145800)
-    ca.getSizeHist()
+    ca.registerArea(4146294, 4145785)  # entire area
+    #ca.registerArea(4146177, 4146113, 372380, 372490)  # selected area
+    #ca.saveRegisteredInstances('talk.pickle')
+    #ca.getSizeHist(threshold=1700)
     #ca.registerArea(4146294, 4146244)
     #ca.getSizeHist()
+    ca.getOrientationHist(nm=15, display='polar2')

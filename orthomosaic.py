@@ -127,7 +127,8 @@ class orthotiff(object):
 if __name__  ==  "__main__":
     orth = orthotiff()
     orth.readTiff("./datasets/C3/C3.tif")
-    orth.readInstances("./datasets/C3/registered_instances_v3.pickle")
+    #orth.readInstances("./datasets/C3/registered_instances_v3.pickle")
+    orth.readInstances("./talk.pickle")
     print("mapping instances")
     orth.mapInstance()
-    orth.saveTiff("./datasets/C3/C3_mask_v3.tif")
+    orth.saveTiff("./talk.tif")
