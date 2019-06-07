@@ -32,7 +32,7 @@ class contourAnalysis(object):
         coord = self.ds.GetGeoTransform()
         self.x, self.x_size, _, self.y, _, self.y_size = coord
 
-        self.h,self.w = self.ds.GetRasterBand(1).ReadAsArray().shape
+        self.h, self.w = self.ds.GetRasterBand(1).ReadAsArray().shape
 
         self.X = self.x + self.x_size * self.w
         self.Y = self.y + self.y_size * self.h

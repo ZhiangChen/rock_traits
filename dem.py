@@ -175,7 +175,7 @@ class DEM(object):
         inv_sk = invert(sk)
         return inv_sk
 
-    def refine_contour(self, contour, itr=2):
+    def refine_contour(self, contour):
         _, paths, _ = cv2.findContours(contour.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         areas = [cv2.contourArea(cnt) for cnt in paths]
         id = areas.index(max(areas))

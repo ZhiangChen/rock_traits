@@ -59,7 +59,7 @@ class rock(object):
                 mask = cv2.resize(mask.astype(float), mask_resize).astype(bool)
                 scale_x = float(mask_resize[0])/dim[0]
                 scale_y = float(mask_resize[1])/dim[1]
-                bb = [int(bb[0]*scale_x), int(bb[1]*scale_y), int(bb[2]*scale_x), int(bb[3]*scale_y)]
+                bb = [int(bb[0]*scale_x), int(bb[1]*scale_y), int(bb[2]*scale_x), int(bb[3]*scale_y)]  # in this script, x,y axis are reversed
 
             if swap_coord:
                 coord = [coord[1], coord[0]]
