@@ -48,12 +48,27 @@ class contourAnalysis(object):
         print("Upper Left: ", self.x, self.y)
         print("Lower Right: ", self.X, self.Y)
 
+    def read_contour(self, file_path, threshold=10):
+        assert os.path.isfile(file_path)
+        return cv2.imread(file_path)[:,:,0] > threshold
 
     def readInstances(self, f, mode="pickle"):
         assert os.path.isfile(f)
         if mode == "pickle":
             with open(f, 'rb') as pk:
                 self.instances = pickle.load(pk)
+
+    def refineInstances(self, contour_path):
+        assert os.path.isfile(contour_path)
+
+        ct = (self.read_contour(contour_path) * 255).astype(np.uint8)
+        ct = cv2.resize(ct, dsize=(self.w, self.h), interpolation=cv2.INTER_NEAREST)
+
+        ct = ct > 10
+
+        cv2.imwrite("../ct.jpg", ct)
+
+
 
     def registerArea(self, y1, y2, x1=None, x2=None):
         assert (self.y >= y1) & (y1 > y2) & (y2 > self.Y)
@@ -272,10 +287,11 @@ if __name__  ==  "__main__":
     ca = contourAnalysis()
     ca.readTiff("./datasets/C3/C3.tif")
     ca.readInstances("./datasets/C3/registered_instances_v3.pickle")
-    ca.registerArea(4146294, 4145785)  # entire area
+    ca.refineInstances("../contours/shifted_contour.jpg")
+    #ca.registerArea(4146294, 4145785)  # entire area
     #ca.registerArea(4146177, 4146113, 372380, 372490)  # selected area
     #ca.saveRegisteredInstances('talk.pickle')
     #ca.getSizeHist(threshold=1700)
     #ca.registerArea(4146294, 4146244)
     #ca.getSizeHist()
-    ca.getOrientationHist(nm=15, display='polar2')
+    #ca.getOrientationHist(nm=15, display='polar2')

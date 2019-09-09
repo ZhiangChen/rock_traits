@@ -297,13 +297,13 @@ class DEM(object):
 
 if __name__  ==  "__main__":
     dem = DEM("../C3_dem.tif")
-    # get contours
-    #dem.transform_slope()
-    #dem.smooth()
-    #levels = list(np.arange(0, 4, 0.2))[6:]
-    #dem.generate_contour(levels)
 
-    """
+    # get contours
+    dem.transform_slope()
+    dem.smooth()
+    levels = list(np.arange(0, 4, 0.2))[6:]
+    dem.generate_contour(levels)
+
     ct = dem.read_contour("../contours/1.6.jpg")
     ct = dem.refine_contour(ct)
     ct = dem.widen_contour(ct * 255)
@@ -323,9 +323,9 @@ if __name__  ==  "__main__":
     ct = dem.opening_contour(ct)
     ct = dem.refine_contour(ct)
     cv2.imwrite("../contours/refined4_contour.jpg", ct)
-    """
 
-    """
+
+
     # 1.6.jpg
     ct = dem.read_contour("../contours/refined4_contour.jpg")
     ct = np.fliplr(ct)
@@ -334,15 +334,17 @@ if __name__  ==  "__main__":
     ct = dem.prolong_contour_tail(ct, delta=120)
     ct = dem.dilation_contour(ct, degree=10)
     cv2.imwrite("../contours/refined5_contour.jpg", ct)
+
+
     # overlapping
     overlap = dem.overlap_two_contours("../contours/refined5_contour.jpg", "../contours/1.6.jpg")
     cv2.imwrite("../contours/overlap_contour.jpg", overlap)
     overlap = dem.overlap_contour_dem("../contours/refined5_contour.jpg", "../C3_dem.tif")
     cv2.imwrite("../contours/overlap_contour_dem.jpg", overlap)
     dem.overlap_contour_orth("../contours/refined5_contour.jpg", "../C3_mask_v3.tif")
-    """
 
-    """
+
+
     # shift contour
     ct = dem.read_contour("../contours/refined5_contour.jpg")
     ct = dem.shiftlr_contour(ct*255, 40)
@@ -350,18 +352,8 @@ if __name__  ==  "__main__":
     overlap = dem.overlap_contour_dem("../contours/shifted_contour.jpg", "../C3_dem.tif")
     cv2.imwrite("../contours/overlap_contour_dem.jpg", overlap)
     dem.overlap_contour_orth("../contours/shifted_contour.jpg", "../C3_mask_v3.tif")
-    """
 
 
-    """
-    # 1.8.jpg
-    ct = dem.read_contour("../contours/1.8.jpg")
-    ct = dem.refine_contour(ct*255)
-    cv2.imwrite("../contours/refined6_contour.jpg", ct)
-    overlap = dem.overlap_contour_dem("../contours/refined6_contour.jpg", "../C3_dem.tif")
-    cv2.imwrite("../contours/overlap_contour_dem.jpg", overlap)
-    dem.overlap_contour_orth("../contours/refined6_contour.jpg", "../C3_mask_v3.tif")
-    """
 
 
     # matplotlib display contour example
@@ -378,7 +370,7 @@ if __name__  ==  "__main__":
     cv2.imwrite("../contours/pruned_sk.jpg", pruned_sk)
     overlap = dem.overlap_two_contours("../contours/pruned_sk.jpg", "../contours/shifted_contour.jpg")
     cv2.imwrite("../contours/sk_contour.jpg", overlap)
-
+    
 
     # prolong example
     # ct = dem.prolong_contour_tail(ct*255)
