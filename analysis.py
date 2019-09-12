@@ -65,8 +65,20 @@ class contourAnalysis(object):
         ct = cv2.resize(ct, dsize=(self.w, self.h), interpolation=cv2.INTER_NEAREST)
 
         ct = ct > 10
+        refine_instances = []
 
-        cv2.imwrite("../ct.jpg", ct)
+        for instance in self.instances:
+            bb = instance["bb"]
+            h = int((bb[0] + bb[2])/2)
+            w = int((bb[1] + bb[3])/2)
+            if ct[h, w]:
+                refine_instances.append(instance)
+
+        self.instances = refine_instances
+        print(len(self.instances))
+        #with open("../refined_instances.pickle", 'wb') as pk:
+        #    pickle.dump(self.instances, pk)
+
 
 
 
@@ -89,7 +101,7 @@ class contourAnalysis(object):
             with open(f, 'wb') as pk:
                 pickle.dump(registered_instances, pk)
 
-    def getSizeHist(self, nm=100, threshold=4000, display=True):
+    def getSizeHist(self, nm=80, threshold=8000, display=True):
         self.sizes = []
         for id in self.ids:
             bb = self.instances[id]['bb']
@@ -98,7 +110,8 @@ class contourAnalysis(object):
             top_left = bb[:2]
             mask = mask - top_left
             mask = self.__create_bool_mask(mask, image.shape[:2])
-            _, contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+            #_, contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)  # one of these two works
+            contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
             areas = [cv2.contourArea(cnt) for cnt in contours]
             size = np.max(areas)
@@ -171,7 +184,9 @@ class contourAnalysis(object):
             top_left = bb[:2]
             mask = mask - top_left
             mask = self.__create_bool_mask(mask, image.shape[:2])
-            _, contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+            # _, contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)  # one of these works
+            contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
             areas = [cv2.contourArea(cnt) for cnt in contours]
             i = np.argmax(areas)
             cnt = contours[i]
@@ -203,7 +218,7 @@ class contourAnalysis(object):
             """
             the polar is not accurate because pi is not accurate
             """
-            rad90 = 90 / 180.0 * np.pi
+            rad90 = 90 / 180.0 * np.piregisterArea
             nm = nm*4
             orn = np.asarray(self.orientations).copy()
             angles = orn[:,0]/180.0*np.pi
@@ -285,13 +300,13 @@ class contourAnalysis(object):
 
 if __name__  ==  "__main__":
     ca = contourAnalysis()
-    ca.readTiff("./datasets/C3/C3.tif")
-    ca.readInstances("./datasets/C3/registered_instances_v3.pickle")
-    ca.refineInstances("../contours/shifted_contour.jpg")
-    #ca.registerArea(4146294, 4145785)  # entire area
+    ca.readTiff("../C3.tif")
+    ca.readInstances("../registered_instances_v3.pickle")
+    ca.refineInstances("../shifted_contour.jpg")
+    ca.registerArea(4146294, 4145785)  # entire area
     #ca.registerArea(4146177, 4146113, 372380, 372490)  # selected area
     #ca.saveRegisteredInstances('talk.pickle')
-    #ca.getSizeHist(threshold=1700)
+    ca.getSizeHist(threshold=8000)
     #ca.registerArea(4146294, 4146244)
     #ca.getSizeHist()
     #ca.getOrientationHist(nm=15, display='polar2')

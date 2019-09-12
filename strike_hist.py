@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-dem.py (python3)
+strike_hist.py (python3)
 Zhiang Chen, June 2019
 
 Copyright (c) 2019 Distributed Robotic Exploration and Mapping Systems Laboratory, ASU
@@ -14,7 +14,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
-from dem import DEM
 from math import sqrt
 
 class Strike_analysis(object):
@@ -37,6 +36,13 @@ class Strike_analysis(object):
 
         with open(instance_path, 'rb') as pk:
             self.instances = pickle.load(pk)
+
+    def create_heatmap(self):
+        B = self.orth.GetRasterBand(1).ReadAsArray()
+        G = self.orth.GetRasterBand(2).ReadAsArray()
+        R = self.orth.GetRasterBand(3).ReadAsArray()
+        self.histmap = np.zeros((self.h, self.w, 3))
+        self.histmap[:, :, 0], self.histmap[:, :, 1], self.histmap[:, :, 2] = R, G, B  # B, G, R
 
     def get_normal_vector(self, latitude_up, latitude_down):
         """
@@ -110,10 +116,9 @@ class Strike_analysis(object):
         :return: boxes in pixel coordinates
         """
         offsets = [step*i for i in range(num+1)[1:]]
+
         if symmetric:
-            offsets_ = (- np.array(offsets)).tolist()
-            offsets = offsets + offsets_
-            offsets.append(0)
+            offsets = [step * i for i in range(-num, num + 1)]
 
         boxes = [self.generate_one_box(center, normal, offset, h, w) for offset in offsets]
         return boxes
@@ -212,25 +217,43 @@ class Strike_analysis(object):
                 mask_[y, x] = 1
         return mask_
 
-    def __add_hist2colormap(self, hist, box):
+    def __add_hist2colormap(self, hist, box, side_box, box_id = None, box_num=None, width_vector=None):
+        scale = 1 # the scale of side box
         num = len(hist)
         p1 = box[0]
         p4 = box[3]
         direction = box[1] - box[0]
         direction_step = direction / num
-        box = box.reshape((1,4,2))
-        for i in range(num):
-            b1 = p1 + direction_step * i
-            b2 = b1 + direction_step
-            b4 = p4 + direction_step * i
-            b3 = b4 + direction_step
-            subbox = np.array((b1, b2, b3, b4), dtype=int)
-            subbox = subbox.reshape((1, 4, 2))
-            points = subbox.copy()
-            subbox[:, :, 0], subbox[:, :, 1] = points[:, :, 1], points[:, :, 0]
-            self.histmap = cv2.fillPoly(self.histmap, subbox, (int(hist[i]), 0, int(hist[i])))
-            #self.histmap = cv2.fillPoly(self.histmap, subbox, int(i*255/num) )
-        print(hist)
+        if not side_box:
+            for i in range(num):
+                b1 = p1 + direction_step * i
+                b2 = b1 + direction_step
+                b4 = p4 + direction_step * i
+                b3 = b4 + direction_step
+                subbox = np.array((b1, b2, b3, b4), dtype=int)
+                subbox = subbox.reshape((1, 4, 2))
+                points = subbox.copy()
+                subbox[:, :, 0], subbox[:, :, 1] = points[:, :, 1], points[:, :, 0]
+                self.histmap = cv2.fillPoly(self.histmap, subbox, (int(hist[i]), 0, int(hist[i])))
+                #self.histmap = cv2.fillPoly(self.histmap, subbox, int(i*255/num) )
+        elif side_box:
+            direction_step = direction_step * scale
+
+            p1 = p1 + width_vector * (box_num - box_id) * scale + width_vector * box_id            + width_vector*0.1
+            p4 = p4 + width_vector * (box_id + 1) + width_vector * (box_num - box_id - 1) * scale  + width_vector*0.1
+
+            for i in range(num):
+                b1 = p1 + direction_step * i
+                b2 = b1 + direction_step
+                b4 = p4 + direction_step * i
+                b3 = b4 + direction_step
+                subbox = np.array((b1, b2, b3, b4), dtype=int)
+                subbox = subbox.reshape((1, 4, 2))
+                points = subbox.copy()
+                subbox[:, :, 0], subbox[:, :, 1] = points[:, :, 1], points[:, :, 0]
+                self.histmap = cv2.fillPoly(self.histmap, subbox, (int(hist[i]), 0, int(hist[i])))
+
+
 
     def __apply_mask(self, image, mask, alpha=0.5):
         """
@@ -245,20 +268,13 @@ class Strike_analysis(object):
             image[:, :, c] = image[:, :, c] * (1 - alpha) + mask[:, :, c] * alpha
         return image
 
-    def rock_hist(self, boxes, size_max=4000, size_step=80):
+    def rock_hist(self, boxes, size_max=4000, size_step=200, mode="size", side_box=False):
         """
         get the histograms of rocks that are in the boxes
         :param boxes:
         :return:
         """
         """ analysis"""
-        B = self.orth.GetRasterBand(1).ReadAsArray()
-        G = self.orth.GetRasterBand(2).ReadAsArray()
-        R = self.orth.GetRasterBand(3).ReadAsArray()
-        self.histmap = np.zeros((self.h, self.w, 3))
-        self.histmap[:,:,0], self.histmap[:,:,1], self.histmap[:,:,2] = R, G, B #B, G, R
-        del R, G, B
-        cv2.imwrite("../contours/orth.jpg", self.histmap)
         rock_statistics = []
         for box in boxes:
             rock_box = dict()
@@ -266,6 +282,7 @@ class Strike_analysis(object):
             rocks = self.get_instances_in_box(box)
             rock_sizes = []
             orientations = []
+            major_lengths = []
             for rock in rocks:
                 bb = rock["bb"]
                 mask = rock["mask"]
@@ -288,19 +305,35 @@ class Strike_analysis(object):
                 eccentricity = sqrt(pow(a, 2) - pow(b, 2))
                 eccentricity = round(eccentricity / a, 2)
                 orientations.append([angle, eccentricity])
+                major_lengths.append(2*a)
             rock_box["sizes"] = rock_sizes
             rock_box["orientations"] = orientations
-
+            rock_box["major_lengths"] = major_lengths
             rock_statistics.append(rock_box)
 
         """ histogram"""
         size_bins = np.arange(0, size_max, size_step)
-        for rock_box in rock_statistics:
-            sizes = rock_box["sizes"]
-            hist, _ = np.histogram(sizes, size_bins)
-            hist = (np.array(hist)/np.max(hist)*255).tolist()  # normalize histogram
-            box = rock_box["box"]
-            self.__add_hist2colormap(hist, box)
+        length_bins = np.arange(0, 200, 10)
+        box_nm = len(rock_statistics)
+        box = rock_statistics[0]["box"]
+        width_v = box[0]-box[3]
+        for i, rock_box in enumerate(rock_statistics):
+            if mode == "size":
+                sizes = rock_box["sizes"]
+                hist, _ = np.histogram(sizes, size_bins)
+                hist = (np.array(hist) / np.max(hist) * 255).tolist()  # normalize histogram
+                box = rock_box["box"]
+                self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v)
+            elif mode == "major_length":
+                major_lengths = rock_box["major_lengths"]
+                hist, _ = np.histogram(major_lengths, length_bins)
+                hist = (np.array(hist) / np.max(hist) * 255).tolist()  # normalize histogram
+                box = rock_box["box"]
+                self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v)
+            else:
+                print("Undefined mode!")
+
+
 
     def overlap_hist_orth(self, histmap):
         B = self.orth.GetRasterBand(1).ReadAsArray()
@@ -313,19 +346,36 @@ class Strike_analysis(object):
         return overlap
 
 
+def hist_entire_scarp(sa):
+    step = 30
+    begin = 4146290
+    sa.create_heatmap()
+
+    for i in range(16):
+        #intersection, norm_v = sa.get_normal_vector(begin - i*step, begin - i*step - step)
+        intersection, norm_v = sa.get_normal_vector(begin - (15-i) * step, begin - (15-i) * step - step)
+
+        boxes = sa.generate_boxes(intersection, norm_v, h=200, w=1600, step=200, num=4)
+        sa.rock_hist(boxes)
+        sa.rock_hist(boxes, mode="major_length", side_box=True)
+        histmap = sa.histmap.astype(np.uint8).copy()
+        cv2.imwrite("../contours/histmap.jpg", histmap)
+        print(i)
+
+    return sa.histmap.astype(np.uint8).copy()
+
 if __name__ == "__main__":
     sa = Strike_analysis("../contours/resized_pruned_sk.jpg", "../C3.tif", "../registered_instances_v3.pickle")
-    intersection, norm_v = sa.get_normal_vector(4146280, 4146275)
-
+    histmap = hist_entire_scarp(sa)
+    #intersection, norm_v = sa.get_normal_vector(4146290, 4146260)
     """
     sk = sa.skeleton.copy()
-    sk = sa.draw_box_in_skeleton(points, sk)
     points = sa.generate_one_box(intersection, norm_v, 100, 30, 100)
     sk = sa.draw_box_in_skeleton(points, sk)
-    cv2.imwrite("box_sk.jpg", sk)
+    cv2.imwrite("../box_sk.jpg", sk)
     """
 
-    boxes = sa.generate_boxes(intersection, norm_v, h=400, w=1000, step=400, num=2)
+    boxes = sa.generate_boxes(intersection, norm_v, h=200, w=1600, step=200, num=4)
     """
     sk = sa.skeleton.copy()
     for box in boxes:
@@ -334,12 +384,14 @@ if __name__ == "__main__":
         #sk = sa.draw_instances_in_skeleton(rocks, sk)
     #cv2.imwrite("../contours/box_sk.jpg", sk)
     """
-    sa.rock_hist(boxes)
-    histmap = sa.histmap.astype(np.uint8).copy()
+    #sa.create_heatmap()
+    #sa.rock_hist(boxes)
+    #sa.rock_hist(boxes, mode="major_length", side_box=True)
+    #histmap = sa.histmap.astype(np.uint8).copy()
     cv2.imwrite("../contours/histmap.jpg", histmap)
 
-    del sa
-    sa = Strike_analysis("../contours/resized_pruned_sk.jpg", "../C3.tif", "../registered_instances_v3.pickle")
+    #del sa
+    #sa = Strike_analysis("../contours/resized_pruned_sk.jpg", "../C3.tif", "../registered_instances_v3.pickle")
     #histmap = cv2.imread("../contours/histmap.jpg")
-    overlap = sa.overlap_hist_orth(histmap)
-    cv2.imwrite("../contours/overlap_hist_orth.jpg", overlap)
+    #overlap = sa.overlap_hist_orth(histmap)
+    #cv2.imwrite("../contours/overlap_hist_orth.jpg", overlap)

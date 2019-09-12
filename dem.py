@@ -274,7 +274,9 @@ class DEM(object):
 
         ct = ct>10
         overlap = self.__apply_mask(orth, ct)
-        cv2.imwrite("../contours/overlap_orth_contour.jpg", overlap)
+        overlap_w = overlap.copy()
+        overlap_w[:, :, 2], overlap_w[:, :, 1], overlap_w[:, :, 0]= overlap[:, :, 0], overlap[:, :, 1], overlap[:, :, 2]
+        cv2.imwrite("../contours/overlap_orth_contour.jpg", overlap_w)
 
 
     def __apply_mask(self, image, mask, color=[1,0,0], alpha=0.5):
