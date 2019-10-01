@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from math import *
 from matplotlib.collections import PatchCollection
 import matplotlib
+import scipy.stats as stats
 
 
 class contourAnalysis(object):
@@ -129,7 +130,110 @@ class contourAnalysis(object):
         if display:
             num_bins = nm
             fig, ax = plt.subplots()
-            l = np.sqrt(np.array(self.sizes))
+            l = np.array(self.sizes)
+            n, bins, patches = ax.hist(l, num_bins)
+            plt.show()
+
+    def getMajorLengthHist(self, nm=80, threshold=8000, display=True):
+        """
+
+        :param nm: the number of bins
+        :param threshold: the threshold of rock size in pixel
+        :param display:
+        :return:
+        """
+        self.major_lengths = []
+        for id in self.ids:
+            bb = self.instances[id]['bb']
+            mask = self.instances[id]['mask']
+            image = self.tif[bb[0]:bb[2], bb[1]:bb[3], :]
+            top_left = bb[:2]
+            mask = mask - top_left
+            mask = self.__create_bool_mask(mask, image.shape[:2])
+            #_, contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)  # one of these two works
+            contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+            areas = [cv2.contourArea(cnt) for cnt in contours]
+            size = np.max(areas)
+
+            if size > threshold:
+                continue
+
+            i = np.argmax(areas)
+            cnt = contours[i]
+            ellipse = cv2.fitEllipse(cnt)
+            (x, y), (MA, ma), angle = ellipse
+            a = ma / 2
+            b = MA / 2
+
+            self.major_lengths.append(ma)
+            if a<b:
+                print(a, b)
+
+            """
+            if len(areas) > 1: # for visualization purpose
+                i = np.argmax(areas)
+                image = cv2.drawContours(image, contours, -1, (0, 255, 0), 1)
+                plt.imshow(image)
+                plt.show()
+            """
+        if display:
+            num_bins = nm
+            fig, ax = plt.subplots()
+            l = np.array(self.major_lengths)/len(self.major_lengths)
+            n, bins, patches = ax.hist(l, num_bins)
+            plt.show()
+
+
+    def getEccentricity(self, nm=80, threshold=8000, display=True):
+        """
+
+        :param nm: the number of bins
+        :param threshold: the threshold of rock size in pixel
+        :param display:
+        :return:
+        """
+        self.ecc = []
+        for id in self.ids:
+            bb = self.instances[id]['bb']
+            mask = self.instances[id]['mask']
+            image = self.tif[bb[0]:bb[2], bb[1]:bb[3], :]
+            top_left = bb[:2]
+            mask = mask - top_left
+            mask = self.__create_bool_mask(mask, image.shape[:2])
+            #_, contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)  # one of these two works
+            contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+            areas = [cv2.contourArea(cnt) for cnt in contours]
+            size = np.max(areas)
+
+            if size > threshold:
+                continue
+
+            i = np.argmax(areas)
+            cnt = contours[i]
+            ellipse = cv2.fitEllipse(cnt)
+            (x, y), (MA, ma), angle = ellipse
+
+            a = ma / 2
+            b = MA / 2
+            eccentricity = sqrt(pow(a, 2) - pow(b, 2))
+            eccentricity = round(eccentricity / a, 2)
+
+            self.ecc.append(eccentricity)
+
+
+            """
+            if len(areas) > 1: # for visualization purpose
+                i = np.argmax(areas)
+                image = cv2.drawContours(image, contours, -1, (0, 255, 0), 1)
+                plt.imshow(image)
+                plt.show()
+            """
+        if display:
+            num_bins = nm
+            fig, ax = plt.subplots()
+            l = np.array(self.ecc)
             n, bins, patches = ax.hist(l, num_bins)
             plt.show()
 
@@ -214,6 +318,7 @@ class contourAnalysis(object):
             plt.imshow(image)
             plt.show()
             """
+
         if display == "polar":
             """
             the polar is not accurate because pi is not accurate
@@ -250,24 +355,31 @@ class contourAnalysis(object):
             fig, ax = plt.subplots()
             orn = np.asarray(self.orientations).copy()
             angles = orn[:, 0]
+
             for i, angle in enumerate(angles):
                 if angle >= 90:
-                    angles[i] = angle - 90
+                    angles[i] = 270 - angle
                 else:
                     angles[i] = 90 - angle
+
             n, bins, patches = ax.hist(angles, nm)
+
+            print(n)
+            print(bins)
+
+
             plt.close('all')
 
             fig, ax = plt.subplots()
             lim = np.max(n) + 20
-            plt.xlim(0,lim)
+            plt.xlim(-lim,lim)
             plt.ylim(0,lim)
             patches = []
             y0 = x0 = 0
-            image = np.zeros((y0,y0,3), dtype='uint8')
 
-            c = np.array([np.cos(np.deg2rad(x)) for x in range(0,95,10)])
-            s = np.array([np.sin(np.deg2rad(x)) for x in range(0,95,10)])
+            #image = np.zeros((y0,y0,3), dtype='uint8')
+            #c = np.array([np.cos(np.deg2rad(x)) for x in range(0,95,10)])
+            #s = np.array([np.sin(np.deg2rad(x)) for x in range(0,95,10)])
             colors = []
 
             for i in range(nm):
@@ -301,12 +413,16 @@ class contourAnalysis(object):
 if __name__  ==  "__main__":
     ca = contourAnalysis()
     ca.readTiff("../C3.tif")
-    ca.readInstances("../registered_instances_v3.pickle")
-    ca.refineInstances("../shifted_contour.jpg")
-    ca.registerArea(4146294, 4145785)  # entire area
+    ca.readInstances("../refined_instances.pickle")
+    #ca.refineInstances("../shifted_contour.jpg")
+
+    ca.registerArea(4146294, 4145785)  # 1. entire area
     #ca.registerArea(4146177, 4146113, 372380, 372490)  # selected area
     #ca.saveRegisteredInstances('talk.pickle')
-    ca.getSizeHist(threshold=8000)
+    #ca.getSizeHist(threshold=4000)  # 2. get size hist
     #ca.registerArea(4146294, 4146244)
     #ca.getSizeHist()
-    #ca.getOrientationHist(nm=15, display='polar2')
+    #ca.getOrientationHist(nm=15, display='polar2')  # 3. get orientation hist
+    #ca.getMajorLengthHist(threshold=4000)
+
+    ca.getEccentricity(nm=20, threshold=4000)

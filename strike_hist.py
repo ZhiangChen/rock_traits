@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 strike_hist.py (python3)
-Zhiang Chen, June 2019
+Zhiang Chen, Sep 2019
 
 Copyright (c) 2019 Distributed Robotic Exploration and Mapping Systems Laboratory, ASU
 """
@@ -217,8 +217,8 @@ class Strike_analysis(object):
                 mask_[y, x] = 1
         return mask_
 
-    def __add_hist2colormap(self, hist, box, side_box, box_id = None, box_num=None, width_vector=None):
-        scale = 1 # the scale of side box
+    def __add_hist2colormap(self, hist, box, side_box, box_id = None, box_num=None, width_vector=None, brightness=None, colormap_max=False):
+        scale = 0.5 # the scale of side box
         num = len(hist)
         p1 = box[0]
         p4 = box[3]
@@ -234,13 +234,28 @@ class Strike_analysis(object):
                 subbox = subbox.reshape((1, 4, 2))
                 points = subbox.copy()
                 subbox[:, :, 0], subbox[:, :, 1] = points[:, :, 1], points[:, :, 0]
-                self.histmap = cv2.fillPoly(self.histmap, subbox, (int(hist[i]), 0, int(hist[i])))
+                if not colormap_max:
+                    if brightness == None:
+                        self.histmap = cv2.fillPoly(self.histmap, subbox, (int(hist[i]), 0, int(hist[i])))
+                    else:
+                        if hist[i] > 1:
+                            self.histmap = cv2.fillPoly(self.histmap, subbox, (brightness, 0, brightness))  # only for mean (one value) plotting
+                        else:
+                            self.histmap = cv2.fillPoly(self.histmap, subbox, (int(hist[i]), 0, int(hist[i])))
+                else:
+                    cmap = plt.cm.get_cmap('jet')
+                    value = hist.max()
+                    value = int(255.0*value/colormap_max)
+                    color = np.array(cmap(value)[:3])*255
+                    #color = cv2.applyColorMap(, cv2.COLORMAP_JET)  # it somehow doesn't work
+                    self.histmap = cv2.fillPoly(self.histmap, subbox, (int(color[2]), int(color[1]), int(color[0])))
+
                 #self.histmap = cv2.fillPoly(self.histmap, subbox, int(i*255/num) )
         elif side_box:
             direction_step = direction_step * scale
 
-            p1 = p1 + width_vector * (box_num - box_id) * scale + width_vector * box_id            + width_vector*0.1
-            p4 = p4 + width_vector * (box_id + 1) + width_vector * (box_num - box_id - 1) * scale  + width_vector*0.1
+            p1 = p1 + width_vector * (box_num - box_id) * scale + width_vector * box_id             + width_vector*0.1
+            p4 = p4 + width_vector * (box_id + 1) + width_vector * (box_num - box_id - 1) * scale   + width_vector*0.1
 
             for i in range(num):
                 b1 = p1 + direction_step * i
@@ -252,6 +267,8 @@ class Strike_analysis(object):
                 points = subbox.copy()
                 subbox[:, :, 0], subbox[:, :, 1] = points[:, :, 1], points[:, :, 0]
                 self.histmap = cv2.fillPoly(self.histmap, subbox, (int(hist[i]), 0, int(hist[i])))
+
+
 
 
 
@@ -268,7 +285,7 @@ class Strike_analysis(object):
             image[:, :, c] = image[:, :, c] * (1 - alpha) + mask[:, :, c] * alpha
         return image
 
-    def rock_hist(self, boxes, size_max=4000, size_step=200, mode="size", side_box=False):
+    def rock_hist(self, boxes, size_max=4000, size_step=200, mode="size", side_box=False, statistics=False, colormap=False):
         """
         get the histograms of rocks that are in the boxes
         :param boxes:
@@ -314,19 +331,84 @@ class Strike_analysis(object):
         """ histogram"""
         size_bins = np.arange(0, size_max, size_step)
         length_bins = np.arange(0, 200, 10)
+        orientation_bins = np.arange(0, 180, 9)
+        eccentricity_bins = np.arange(0, 1, 0.05)
+
         box_nm = len(rock_statistics)
         box = rock_statistics[0]["box"]
         width_v = box[0]-box[3]
         for i, rock_box in enumerate(rock_statistics):
             if mode == "size":
                 sizes = rock_box["sizes"]
-                hist, _ = np.histogram(sizes, size_bins)
+                if not colormap:
+                    if not statistics:
+                        hist, _ = np.histogram(sizes, size_bins)
+                        hist = (np.array(hist) / np.max(hist) * 255).tolist()  # normalize histogram
+                        box = rock_box["box"]
+                        self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v)
+                    elif statistics:
+                        mu = np.array(sizes).mean()
+                        sigma = sqrt(np.array(sizes).var())
+                        brightness = 255 - sigma/10.0 # you need to print this out and then figure out the formula
+                        if brightness<0:
+                            brightness = 0
+                        #print(mu)
+                        hist, _ = np.histogram(mu, size_bins)
+                        hist = (np.array(hist) / np.max(hist) * 255).tolist()  # normalize histogram
+                        box = rock_box["box"]
+                        self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v, brightness=brightness)
+                else:
+                    mu = np.array(sizes).mean()
+                    sigma = sqrt(np.array(sizes).var())
+                    hist, _ = np.histogram(mu, size_bins)
+                    hist = hist * mu
+                    box = rock_box["box"]
+                    self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v, colormap_max=size_max)
+
+            elif mode == "major_length":
+                major_lengths = rock_box["major_lengths"]
+                if not colormap:
+                    if not statistics:
+                        hist, _ = np.histogram(major_lengths, length_bins)
+                        hist = (np.array(hist) / np.max(hist) * 255).tolist()  # normalize histogram
+                        box = rock_box["box"]
+                        self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v)
+                    elif statistics:
+                        mu = np.array(major_lengths).mean()
+                        sigma = sqrt(np.array(major_lengths).var())
+                        brightness = (50-sigma)/50.0*255
+                        #print(brightness)
+                        print(sigma)
+                        if brightness < 0:
+                            brightness = 0
+                        hist, _ = np.histogram(mu, length_bins)  # hist is one-hot encoded
+                        hist = (np.array(hist) / np.max(hist) * 255).tolist()  # normalize histogram
+                        box = rock_box["box"]
+                        self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v, brightness=brightness)
+                else:
+                    mu = np.array(major_lengths).mean()
+                    sigma = sqrt(np.array(major_lengths).var())
+                    hist, _ = np.histogram(mu, length_bins)
+                    hist = hist * mu
+                    box = rock_box["box"]
+                    print(hist)
+                    self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v, colormap_max=55)  # the maximum mean of major lengths
+
+
+            elif mode == "orientation":
+                orientations = rock_box["orientations"]
+
+                orientations = np.array(orientations)[:,0]
+                hist, _ = np.histogram(orientations, orientation_bins)
                 hist = (np.array(hist) / np.max(hist) * 255).tolist()  # normalize histogram
                 box = rock_box["box"]
                 self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v)
-            elif mode == "major_length":
-                major_lengths = rock_box["major_lengths"]
-                hist, _ = np.histogram(major_lengths, length_bins)
+
+            elif mode == "eccentricity":
+                orientations = rock_box["orientations"]
+
+                orientations = np.array(orientations)[:,1]
+                hist, _ = np.histogram(orientations, eccentricity_bins)
                 hist = (np.array(hist) / np.max(hist) * 255).tolist()  # normalize histogram
                 box = rock_box["box"]
                 self.__add_hist2colormap(hist, box, side_box, i, box_nm, width_v)
@@ -342,7 +424,7 @@ class Strike_analysis(object):
         orth = np.zeros((self.h, self.w, 3), dtype=np.uint8)
         orth[:, :, 0], orth[:, :, 1], orth[:, :, 2] = R, G, B
         del R, G, B
-        overlap = self.__apply_mask(orth, histmap)
+        overlap = self.__apply_mask(orth, histmap, alpha=0.8)
         return overlap
 
 
@@ -356,7 +438,7 @@ def hist_entire_scarp(sa):
         intersection, norm_v = sa.get_normal_vector(begin - (15-i) * step, begin - (15-i) * step - step)
 
         boxes = sa.generate_boxes(intersection, norm_v, h=200, w=1600, step=200, num=4)
-        sa.rock_hist(boxes)
+        #sa.rock_hist(boxes, mode="major_length")
         sa.rock_hist(boxes, mode="major_length", side_box=True)
         histmap = sa.histmap.astype(np.uint8).copy()
         cv2.imwrite("../contours/histmap.jpg", histmap)
@@ -375,7 +457,7 @@ if __name__ == "__main__":
     cv2.imwrite("../box_sk.jpg", sk)
     """
 
-    boxes = sa.generate_boxes(intersection, norm_v, h=200, w=1600, step=200, num=4)
+    #boxes = sa.generate_boxes(intersection, norm_v, h=200, w=1600, step=200, num=4)
     """
     sk = sa.skeleton.copy()
     for box in boxes:
@@ -388,7 +470,7 @@ if __name__ == "__main__":
     #sa.rock_hist(boxes)
     #sa.rock_hist(boxes, mode="major_length", side_box=True)
     #histmap = sa.histmap.astype(np.uint8).copy()
-    cv2.imwrite("../contours/histmap.jpg", histmap)
+    #cv2.imwrite("../contours/histmap.jpg", histmap)
 
     #del sa
     #sa = Strike_analysis("../contours/resized_pruned_sk.jpg", "../C3.tif", "../registered_instances_v3.pickle")
