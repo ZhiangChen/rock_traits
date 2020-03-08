@@ -9,17 +9,18 @@ read Tiff; read global instances; add global instances to the tiff and create a 
 
 import os
 import gdal
-import cv2
 import pickle
 import numpy as np
 import colorsys
 import random
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 class orthotiff(object):
     def __init__(self):
         self.instances = []
         self.ds = None
+        self.cnt = []
 
     def readTiff(self, f):
         assert os.path.isfile(f)
@@ -31,21 +32,37 @@ class orthotiff(object):
             with open(f, 'rb') as pk:
                 self.instances = pickle.load(pk)
 
-    def mapInstance(self, N=100):
-        R = self.ds.GetRasterBand(1).ReadAsArray()
-        G = self.ds.GetRasterBand(2).ReadAsArray()
-        B = self.ds.GetRasterBand(3).ReadAsArray()
-        dim = R.shape
+    def readRGB(self, r, g, b):
+        r = cv2.imread(r, cv2.IMREAD_GRAYSCALE).astype(np.uint8)
+        g = cv2.imread(g,  cv2.IMREAD_GRAYSCALE).astype(np.uint8)
+        b = cv2.imread(b,  cv2.IMREAD_GRAYSCALE).astype(np.uint8)
+        dim = r.shape
         resize = (dim[0], dim[1], 1)
-        self.tif = np.concatenate((R.reshape(resize), G.reshape(resize), B.reshape(resize)), axis=2)
+        r = r.reshape(resize)
+        g = g.reshape(resize)
+        b = b.reshape(resize)
+        self.tif = np.concatenate((r, g, b), axis=2)
+
+    def mapInstance(self, N=100, got_tif=False):
+        if not got_tif:
+            R = self.ds.GetRasterBand(1).ReadAsArray()
+            G = self.ds.GetRasterBand(2).ReadAsArray()
+            B = self.ds.GetRasterBand(3).ReadAsArray()
+            dim = R.shape
+            resize = (dim[0], dim[1], 1)
+            self.tif = np.concatenate((R.reshape(resize), G.reshape(resize), B.reshape(resize)), axis=2)
 
         colors = self.__random_colors(N)
 
         for i,instance in enumerate(self.instances):
             color_id = np.random.randint(N)
             self.__add_instance(instance, colors[color_id])
-            print(i)
+            if i % 10 == 0:
+                print(i)
+        print(len(self.instances))
 
+    def savePNG(self, f):
+        cv2.imwrite(f, self.tif)
 
     def saveTiff(self, f):
         driver = gdal.GetDriverByName('GTiff')
@@ -72,13 +89,18 @@ class orthotiff(object):
     def __add_instance(self, instance, color):
         bb = instance['bb']
         mask = instance['mask']
+        x, y = mask[:, 0].min(), mask[:, 1].min()
+        x_, y_ = mask[:, 0].max(), mask[:, 1].max()
+        bb = np.array((x, y, x_, y_))
+
         image = self.tif[bb[0]:bb[2], bb[1]:bb[3], :]
 
         top_left = bb[:2]
         mask = mask - top_left
         mask = self.__create_bool_mask(mask, image.shape[:2])
+        cnt = np.count_nonzero(mask)
+        color = self.__get_color(cnt)
         image = self.__apply_mask(image, mask, color)
-
         self.tif[bb[0]:bb[2], bb[1]:bb[3], :] = image
 
 
@@ -91,10 +113,10 @@ class orthotiff(object):
         :return: bool mask
         """
         mask_ = np.zeros(size)
-        mask_[0,:] = 1
-        mask_[:,0] = 1
-        mask_[-1,:] = 1
-        mask_[:,-1] = 1
+        mask_[0, :] = 1
+        mask_[:, 0] = 1
+        mask_[-1, :] = 1
+        mask_[:, -1] = 1
         for y,x in mask:
             if (y<size[0]) & (x<size[1]):
                 mask_[y,x] = 1
@@ -107,7 +129,8 @@ class orthotiff(object):
         convert to RGB.
         """
         brightness = 1.0 if bright else 0.7
-        hsv = [(i / N, 1, brightness) for i in range(N)]
+        # hsv = [(i / N, 1, brightness) for i in range(N)]
+        hsv = [(i / float(N), 1, brightness) for i in range(N)]
         colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
         random.shuffle(colors)
         return colors
@@ -123,12 +146,26 @@ class orthotiff(object):
                                       image[:, :, c])
         return image
 
+    def __get_color(self, cnt):
+        if cnt>30000:
+            return (1.0, 1.0, 1.0)
+
+        cmap = cm.get_cmap('plasma')
+        return cmap(cnt/3000.0)[:3]
 
 if __name__  ==  "__main__":
+    import sys
+    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+    import cv2
+
     orth = orthotiff()
-    orth.readTiff("./datasets/C3/C3.tif")
+    #orth.readTiff("./datasets/Rock/Orth5.tif")
     #orth.readInstances("./datasets/C3/registered_instances_v3.pickle")
-    orth.readInstances("./talk.pickle")
+
+    #orth.readRGB('./datasets/Rock/R.png', './datasets/Rock/G.png', './datasets/Rock/B.png')
+    orth.readRGB('./datasets/Rock/B.png', './datasets/Rock/G.png', './datasets/Rock/R.png')
+    orth.readInstances("./registered_instances_3_05.pickle")
     print("mapping instances")
-    orth.mapInstance()
-    orth.saveTiff("./talk.tif")
+    orth.mapInstance(got_tif=True)
+    orth.savePNG("./rocks_3_05.png")
+

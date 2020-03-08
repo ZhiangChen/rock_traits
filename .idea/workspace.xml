@@ -5,10 +5,9 @@
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/rock_traits.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/rock_traits.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dem.py" beforeDir="false" afterPath="$PROJECT_DIR$/dem.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance.py" beforeDir="false" afterPath="$PROJECT_DIR$/instance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/orthomosaic.py" beforeDir="false" afterPath="$PROJECT_DIR$/orthomosaic.py" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,24 +24,18 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1PtvnjOtOXmul4ARDTiwb0gi2nu" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
-  </component>
-  <component name="RunManager" selected="Python.analysis">
+  <component name="RunManager" selected="Python.instance">
     <configuration name="analysis" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="rock_traits" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -150,11 +143,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.instance" />
+        <item itemvalue="Python.orthomosaic" />
         <item itemvalue="Python.analysis" />
         <item itemvalue="Python.dem" />
         <item itemvalue="Python.strike_hist" />
-        <item itemvalue="Python.orthomosaic" />
-        <item itemvalue="Python.instance" />
       </list>
     </recent_temporary>
   </component>
@@ -183,5 +176,27 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="3406" height="604" key="GridCell.Tab.0.bottom" timestamp="1582578145979">
+      <screen x="0" y="34" width="3840" height="2126" />
+    </state>
+    <state width="3406" height="604" key="GridCell.Tab.0.bottom/0.34.3840.2126@0.34.3840.2126" timestamp="1582578145979" />
+    <state width="3406" height="604" key="GridCell.Tab.0.center" timestamp="1582578145979">
+      <screen x="0" y="34" width="3840" height="2126" />
+    </state>
+    <state width="3406" height="604" key="GridCell.Tab.0.center/0.34.3840.2126@0.34.3840.2126" timestamp="1582578145979" />
+    <state width="3406" height="604" key="GridCell.Tab.0.left" timestamp="1582578145979">
+      <screen x="0" y="34" width="3840" height="2126" />
+    </state>
+    <state width="3406" height="604" key="GridCell.Tab.0.left/0.34.3840.2126@0.34.3840.2126" timestamp="1582578145979" />
+    <state width="3406" height="604" key="GridCell.Tab.0.right" timestamp="1582578145979">
+      <screen x="0" y="34" width="3840" height="2126" />
+    </state>
+    <state width="3406" height="604" key="GridCell.Tab.0.right/0.34.3840.2126@0.34.3840.2126" timestamp="1582578145979" />
+    <state x="2245" y="644" key="SettingsEditor" timestamp="1581734503284">
+      <screen x="0" y="34" width="3840" height="2126" />
+    </state>
+    <state x="2245" y="644" key="SettingsEditor/0.34.3840.2126@0.34.3840.2126" timestamp="1581734503284" />
   </component>
 </project>

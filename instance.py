@@ -8,7 +8,6 @@ merge and refine all rocks, and represent them in global pixel coordinates
 """
 import numpy as np
 import pickle
-import cv2
 import matplotlib.pyplot as plt
 import time
 
@@ -34,6 +33,9 @@ class rock(object):
                 instances = pickle.load(pk)
                 return instances
 
+    def readFault(self, path):
+        self.fault = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+
     def saveRegisteredInstances(self, f='registered_instances.pickle', mode="pickle"):
         registered_instances = self.non_edge_instances + self.edge_instances
         print(len(registered_instances))
@@ -41,7 +43,7 @@ class rock(object):
             with open(f, 'wb') as pk:
                 pickle.dump(registered_instances, pk)
 
-    def addAsGlobalInstances(self, instances, mask_resize=None, swap_coord=True):
+    def addAsGlobalInstances(self, instances, mask_resize=None, swap_coord=True, refine=True):
         """
         get instances in global pixel coordinates, and store as self.instances
         :param instances: instances, list
@@ -52,31 +54,48 @@ class rock(object):
         """
         for instance in instances:
             mask = instance['mask']
-            dim = mask.shape
             bb = instance['bb']
             coord = instance['coord']
+            dim = mask.shape
+
             if mask_resize != None:
                 mask = cv2.resize(mask.astype(float), mask_resize).astype(bool)
                 scale_x = float(mask_resize[0])/dim[0]
                 scale_y = float(mask_resize[1])/dim[1]
-                bb = [int(bb[0]*scale_x), int(bb[1]*scale_y), int(bb[2]*scale_x), int(bb[3]*scale_y)]  # in this script, x,y axis are reversed
+                bb = [int(bb[0]*scale_x), int(bb[1]*scale_y), int(bb[2]*scale_x), int(bb[3]*scale_y)]
 
             if swap_coord:
                 coord = [coord[1], coord[0]]
 
             coord = np.asarray(coord + coord).astype(int)
             bb = np.asarray(bb).astype(int) + coord
+            mask = mask > 0.9
             mask_coord = np.argwhere(mask==True) + coord[:2]
+            if len(mask_coord) < 10:
+                continue
+
+            x, y = mask_coord[:, 0].min(), mask_coord[:, 1].min()
+            x_, y_ = mask_coord[:, 0].max(), mask_coord[:, 1].max()
+            bb = np.array((x, y, x_, y_))
+
+            if (x == x_) | (y ==y_):
+                continue
 
             global_inst = dict()
             global_inst['bb'] = bb
             global_inst['mask'] = mask_coord
             global_inst['coord'] = coord[:2]
 
-            self.instances.append(global_inst)
+            if refine:
+                x = int((bb[0] + bb[2]) / 2)
+                y = int((bb[1] + bb[3]) / 2)
+                if self.fault[x, y] == 255:
+                    self.instances.append(global_inst)
+            else:
+                self.instances.append(global_inst)
 
     def resetInstances(self):
-        """
+        """/media/sarah/4dbf89b0-d16f-446a-93da-11629c6d3348/sarah/Zhiang_mask_rcnn/data_augmentor
         reset self.instances
         :return:
         """
@@ -93,8 +112,7 @@ class rock(object):
         self.overlap_x = overlap_x
         self.overlap_y = overlap_y
 
-
-        for i,instance in enumerate(self.instances):
+        for i, instance in enumerate(self.instances):
             id = self.__checkRegister(instance)
 
             if id == None:
@@ -133,13 +151,13 @@ class rock(object):
         """
         bb = instance['bb']
         coord = instance['coord']
-        if (bb[0] - coord[0]) <= self.overlap_y:
+        if (bb[0] - coord[0]) <= self.overlap_x:
             return False
-        elif (bb[1] - coord[1]) <= self.overlap_x:
+        elif (bb[1] - coord[1]) <= self.overlap_y:
             return False
-        elif (coord[0] + self.tile_size - bb[2]) <= self.overlap_y:
+        elif (coord[0] + self.tile_size - bb[2]) <= self.overlap_x:
             return False
-        elif (coord[1] + self.tile_size - bb[3]) <= self.overlap_x:
+        elif (coord[1] + self.tile_size - bb[3]) <= self.overlap_y:
             return False
         else:
             return True
@@ -195,7 +213,7 @@ class rock(object):
         mask_1 = mask1.tolist()
         mask_2 = mask2.tolist()
         overlap = [px for px in mask_1 if px in mask_2]
-        return(len(overlap))
+        return (len(overlap))
 
 
     def __mergeInstances(self, id, instance):
@@ -217,6 +235,7 @@ class rock(object):
 
 
 if __name__  ==  "__main__":
+    """
     rk = rock()
 
     t1 = time.time()
@@ -284,6 +303,7 @@ if __name__  ==  "__main__":
     print(t2 - t1)
 
     rk.saveRegisteredInstances()
+    """
 
     #"""
     #a = np.array(((10,10),(20,30)))
@@ -291,6 +311,24 @@ if __name__  ==  "__main__":
     #c = rk.checkBB(b,a)
     #print(c)
     #"""
+    import sys
+
+    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+    import cv2
+
+    rk = rock()
+    rk.readFault('./datasets/Rock/fault.png')
+    for i in range(3):
+        print(i)
+        name = "./datasets/Rock/rocks_3_18_%02d.pickle" % i
+        instances = rk.loadFile(name)
+        print(len(instances))
+        rk.addAsGlobalInstances(instances, swap_coord=False)
+        print(len(rk.instances))
+        rk.refineInstance(10, 10, 400)
+        rk.resetInstances()
+
+    rk.saveRegisteredInstances('registered_instances_3_18.pickle')
 
 
 
@@ -315,6 +353,6 @@ t2= [0,
 273.3696777820587, 
 340.45087242126465]
 plt.plot(n2,t2)
-plt.show()
+plt.show()4680
 """
 
