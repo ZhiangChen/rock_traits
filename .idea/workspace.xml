@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b5228e17-2098-481e-8c6d-7af9514b909f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/rock_traits.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/rock_traits.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/instance.py" beforeDir="false" afterPath="$PROJECT_DIR$/instance.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/orthomosaic.py" beforeDir="false" afterPath="$PROJECT_DIR$/orthomosaic.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -198,5 +194,16 @@
       <screen x="0" y="34" width="3840" height="2126" />
     </state>
     <state x="2245" y="644" key="SettingsEditor/0.34.3840.2126@0.34.3840.2126" timestamp="1581734503284" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/orthomosaic.py</url>
+          <line>114</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

@@ -71,7 +71,7 @@ class rock(object):
             bb = np.asarray(bb).astype(int) + coord
             mask = mask > 0.9
             mask_coord = np.argwhere(mask==True) + coord[:2]
-            if len(mask_coord) < 10:
+            if len(mask_coord) < 2:
                 continue
 
             x, y = mask_coord[:, 0].min(), mask_coord[:, 1].min()
@@ -313,22 +313,22 @@ if __name__  ==  "__main__":
     #"""
     import sys
 
-    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+    #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
     import cv2
 
     rk = rock()
-    rk.readFault('./datasets/Rock/fault.png')
-    for i in range(3):
+    rk.readFault('./datasets/C3/fault.png')  # fault scarp mask image
+    for i in range(9):
         print(i)
-        name = "./datasets/Rock/rocks_3_18_%02d.pickle" % i
+        name = "./datasets/C3/rocks_c3_rgbd1_%02d.pickle" % i
         instances = rk.loadFile(name)
         print(len(instances))
-        rk.addAsGlobalInstances(instances, swap_coord=False)
+        rk.addAsGlobalInstances(instances, swap_coord=False, refine=False)
         print(len(rk.instances))
         rk.refineInstance(10, 10, 400)
         rk.resetInstances()
 
-    rk.saveRegisteredInstances('registered_instances_3_18.pickle')
+    rk.saveRegisteredInstances('registered_instances_c3_rgbd1.pickle')
 
 
 

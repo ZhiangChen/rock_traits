@@ -2,7 +2,7 @@
 """
 dem.py (python2)
 Zhiang Chen, May 2019
-
+   
 Copyright (c) 2019 Distributed Robotic Exploration and Mapping Systems Laboratory, ASU
 
 """

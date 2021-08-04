@@ -62,7 +62,9 @@ class orthotiff(object):
         print(len(self.instances))
 
     def savePNG(self, f):
-        cv2.imwrite(f, self.tif)
+        #tif = cv2.flip(self.tif, 0)  # flip vertically. Somehow the image is flipped. 
+        tif = self.tif
+        cv2.imwrite(f, tif)
 
     def saveTiff(self, f):
         driver = gdal.GetDriverByName('GTiff')
@@ -155,17 +157,37 @@ class orthotiff(object):
 
 if __name__  ==  "__main__":
     import sys
-    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+    #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
     import cv2
-
+    
+    #"""
     orth = orthotiff()
-    #orth.readTiff("./datasets/Rock/Orth5.tif")
-    #orth.readInstances("./datasets/C3/registered_instances_v3.pickle")
-
-    #orth.readRGB('./datasets/Rock/R.png', './datasets/Rock/G.png', './datasets/Rock/B.png')
-    orth.readRGB('./datasets/Rock/B.png', './datasets/Rock/G.png', './datasets/Rock/R.png')
-    orth.readInstances("./registered_instances_3_05.pickle")
+    orth.readRGB('./datasets/C3/B.png', './datasets/C3/G.png', './datasets/C3/R.png')
+    orth.readInstances("./registered_instances_c3_rgbd1_refined.pickle")
     print("mapping instances")
     orth.mapInstance(got_tif=True)
-    orth.savePNG("./rocks_3_05.png")
+    orth.savePNG("./rocks_c3_rgbd1_refined.png")
+    """
+    orth = orthotiff()
+    orth.readRGB('./datasets/C3/B.png', './datasets/C3/G.png', './datasets/C3/R.png')
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_00.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_01.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_02.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_03.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_04.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_05.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_06.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_07.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.readInstances("./datasets/C3/rocks_c3_rgbd1_08.pickle")
+    orth.mapInstance(got_tif=True)
+    orth.savePNG("./rocks_c3_rgbd1_raw.png")
+    """
 
