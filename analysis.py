@@ -7,6 +7,8 @@ Copyright (c) 2019 Distributed Robotic Exploration and Mapping Systems Laborator
 """
 
 import numpy as np
+import sys
+sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import os
 import gdal
@@ -16,7 +18,7 @@ from math import *
 from matplotlib.collections import PatchCollection
 import matplotlib
 import scipy.stats as stats
-
+import csv
 
 class contourAnalysis(object):
     def __init__(self):
@@ -80,8 +82,41 @@ class contourAnalysis(object):
         #with open("../refined_instances.pickle", 'wb') as pk:
         #    pickle.dump(self.instances, pk)
 
+    def pixel2utm(self, x, y):
+        utm_x = x * self.x_size + self.x
+        utm_y = y * self.y_size + self.y
+        return utm_x, utm_y
+
+    def saveCSV(self, ):
+        f = open('c3_rocks.csv', 'w', newline='')
+        writer = csv.writer(f)
+        writer.writerow(["id", "utm_long", "utm_lat", "area(m^2)", "angle", "eccentricity"])
+        for id in self.ids:
+            bb = self.instances[id]['bb']
+            mask = self.instances[id]['mask']
+            image = self.tif[bb[0]:bb[2], bb[1]:bb[3], :]
+            top_left = bb[:2]
+            mask = mask - top_left
+            mask = self.__create_bool_mask(mask, image.shape[:2])
+            #_, contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)  # one of these two works
+            contours, _ = cv2.findContours(mask.astype(np.uint8).copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+            areas = [cv2.contourArea(cnt) for cnt in contours]
+            size = np.max(areas)
 
 
+            i = np.argmax(areas)
+            cnt = contours[i]
+            ellipse = cv2.fitEllipse(cnt)
+            (x, y), (MA, ma), angle = ellipse
+
+            a = ma / 2
+            b = MA / 2
+            eccentricity = sqrt(pow(a, 2) - pow(b, 2))
+            eccentricity = round(eccentricity / a, 2)
+            center = ((bb[1] + bb[3])/2, (bb[0] + bb[2])/2)
+            utm = self.pixel2utm(center[0], center[1])
+            writer.writerow([id, utm[0], utm[1], abs(size*self.y_size*self.x_size), angle, eccentricity])
 
     def registerArea(self, y1, y2, x1=None, x2=None):
         assert (self.y >= y1) & (y1 > y2) & (y2 > self.Y)
@@ -412,11 +447,12 @@ class contourAnalysis(object):
 
 if __name__  ==  "__main__":
     ca = contourAnalysis()
-    ca.readTiff("../C3.tif")
-    ca.readInstances("../refined_instances.pickle")
+    ca.readTiff("C3.tif")
+    ca.readInstances("refined_instances.pickle")
     #ca.refineInstances("../shifted_contour.jpg")
 
     ca.registerArea(4146294, 4145785)  # 1. entire area
+    ca.saveCSV()
     #ca.registerArea(4146177, 4146113, 372380, 372490)  # selected area
     #ca.saveRegisteredInstances('talk.pickle')
     #ca.getSizeHist(threshold=4000)  # 2. get size hist
@@ -425,4 +461,4 @@ if __name__  ==  "__main__":
     #ca.getOrientationHist(nm=15, display='polar2')  # 3. get orientation hist
     #ca.getMajorLengthHist(threshold=4000)
 
-    ca.getEccentricity(nm=20, threshold=4000)
+    #ca.getEccentricity(nm=20, threshold=4000)
