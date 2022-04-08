@@ -1,5 +1,5 @@
 1. orthomap: https://drive.google.com/file/d/1lsr4_etv4XSYaKinhEW9DnITGcmezxg9/view?usp=sharing
-2. DEM: 
+2. DEM: https://drive.google.com/file/d/1ae3Ev1HmM03E6LahXR8xIWwE7VXkE0Q8/view?usp=sharing
 3. training and validation datasets: https://drive.google.com/file/d/1C-ffalGNsM9SJUR1dFWIS2vRsYwRi_O8/view?usp=sharing
 4. Mask RCNN with trained parameters: 
 5. rock prediction shapefile in the study area: https://drive.google.com/file/d/1bSUrhqWu8vUxrpvDZmdFoFPVFT9hyZTb/view?usp=sharing 
